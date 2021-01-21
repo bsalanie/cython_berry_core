@@ -8,7 +8,7 @@ from nbdev.showdoc import *
 
 
 
-#exports
+#export
 
 import numpy as np
 import numpy.linalg as npla

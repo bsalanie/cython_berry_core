@@ -155,109 +155,6 @@ the idiosyncratic $v_{ij}$ is standard type-I EV and $\varepsilon_i$ is $N(0,\Si
     {% raw %}
     
 <div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">numpy.linalg</span> <span class="k">as</span> <span class="nn">npla</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span>
-
-<span class="k">def</span> <span class="nf">npmaxabs</span><span class="p">(</span><span class="n">arr</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">arr</span><span class="p">))</span>
-
-
-<span class="k">def</span> <span class="nf">simulated_shares</span><span class="p">(</span><span class="n">utils</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    return simulated shares for given simulated utilities</span>
-
-<span class="sd">    :param np.array utils: array `(nproducts, ndraws)`</span>
-
-<span class="sd">    :return: simulated shares `(nproducts, ndraws)`</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">shares</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">utils</span><span class="p">)</span>
-    <span class="n">denom</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">shares</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-    <span class="n">shares</span> <span class="o">=</span> <span class="n">shares</span> <span class="o">/</span> <span class="n">denom</span>
-    <span class="k">return</span> <span class="n">shares</span>
-
-
-<span class="k">def</span> <span class="nf">simulated_mean_shares</span><span class="p">(</span><span class="n">utils</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    return simulated mean shares for given simulated utilities</span>
-
-<span class="sd">    :param np.array utils: array `(nproducts, ndraws)`</span>
-
-<span class="sd">    :return: np.array simulated mean shares: array `(nproducts)`</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">simulated_shares</span><span class="p">(</span><span class="n">utils</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
-
-<span class="k">def</span> <span class="nf">berry_core</span><span class="p">(</span><span class="n">shares</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">mean_u</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">X2</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
-               <span class="n">Sigma</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">tol</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-9</span><span class="p">,</span>
-               <span class="n">maxiter</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10000</span><span class="p">,</span> <span class="n">ndraws</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10000</span><span class="p">,</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    contraction to invert for product effects :math:`\\xi` from market shares</span>
-
-<span class="sd">    :param np.array shares: `nproducts` vector of observed market shares</span>
-
-<span class="sd">    :param np.array mean_u: `(nproducts)` vector of mean utilities</span>
-
-<span class="sd">    :param np.array X2: `(nproducts, nx2)` matrix of nonlinear covariates</span>
-
-<span class="sd">    :param np.array Sigma: `(nx2, nx2)` variance-covariance matrix of random coefficients on `X2`, \</span>
-<span class="sd">    or `(nx2)` if diagonal</span>
-
-<span class="sd">    :param float tol: tolerance</span>
-
-<span class="sd">    :param int maxiter: max iterations</span>
-
-<span class="sd">    :param int ndraws: number of draws for simulation</span>
-
-<span class="sd">    :params bool verbose: print stuff if `True`</span>
-
-<span class="sd">    :return: `(nproducts)` vector of :math:`\\xi` values, and return code 0 if OK</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">nproducts</span><span class="p">,</span> <span class="n">nx2</span> <span class="o">=</span> <span class="n">X2</span><span class="o">.</span><span class="n">shape</span>
-    <span class="k">assert</span> <span class="n">shares</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="n">nproducts</span><span class="p">,</span> <span class="s2">&quot;should have as many shares as rows in X2&quot;</span>
-    <span class="k">assert</span> <span class="n">mean_u</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="n">nproducts</span><span class="p">,</span> <span class="s2">&quot;should have as many mean utilities as rows in X2&quot;</span>
-
-    <span class="k">if</span> <span class="n">Sigma</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">Sigma</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="n">nx2</span><span class="p">:</span>
-        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">Sigma</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s2">&quot;berry_core: all elements of the diagonal Sigma should be positive or 0&quot;</span>
-        <span class="n">Xsig</span> <span class="o">=</span> <span class="n">X2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">Sigma</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="n">Sigma</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span> <span class="ow">and</span> <span class="n">Sigma</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="n">nx2</span><span class="p">,</span> <span class="n">nx2</span><span class="p">):</span>
-        <span class="n">L</span> <span class="o">=</span> <span class="n">npla</span><span class="o">.</span><span class="n">cholesky</span><span class="p">(</span><span class="n">Sigma</span><span class="p">)</span>
-        <span class="n">Xsig</span> <span class="o">=</span> <span class="n">X2</span> <span class="o">@</span> <span class="n">L</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">print_stars</span><span class="p">(</span><span class="s2">&quot;berry_core: Sigma should be (nx2, nx2) or (nx2)&quot;</span><span class="p">)</span>
-        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">()</span>
-
-    <span class="n">sum_shares</span> <span class="o">=</span> <span class="n">shares</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-    <span class="n">market_zero_share</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">sum_shares</span>
-
-    <span class="n">xi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">shares</span> <span class="o">/</span> <span class="n">market_zero_share</span><span class="p">)</span> <span class="o">-</span> <span class="n">mean_u</span>
-    <span class="n">max_err</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">Inf</span>
-    <span class="n">retcode</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="nb">iter</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="n">eps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">nx2</span><span class="p">,</span> <span class="n">ndraws</span><span class="p">))</span>
-    <span class="k">while</span> <span class="n">max_err</span> <span class="o">&gt;</span> <span class="n">tol</span><span class="p">:</span>
-        <span class="n">utils</span> <span class="o">=</span> <span class="p">(</span><span class="n">Xsig</span> <span class="o">@</span> <span class="n">eps</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">mean_u</span> <span class="o">+</span> <span class="n">xi</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
-        <span class="n">shares_sim</span> <span class="o">=</span> <span class="n">simulated_mean_shares</span><span class="p">(</span><span class="n">utils</span><span class="p">)</span>
-        <span class="n">err_shares</span> <span class="o">=</span> <span class="n">shares</span> <span class="o">-</span> <span class="n">shares_sim</span>
-        <span class="n">max_err</span> <span class="o">=</span> <span class="n">npmaxabs</span><span class="p">(</span><span class="n">err_shares</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">verbose</span> <span class="ow">and</span> <span class="nb">iter</span> <span class="o">%</span> <span class="mi">100</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;berry_core: error </span><span class="si">{</span><span class="n">max_err</span><span class="si">}</span><span class="s2"> after </span><span class="si">{</span><span class="nb">iter</span><span class="si">}</span><span class="s2"> iterations&quot;</span><span class="p">)</span>
-        <span class="nb">iter</span> <span class="o">+=</span> <span class="mi">1</span>
-        <span class="k">if</span> <span class="nb">iter</span> <span class="o">&gt;</span> <span class="n">maxiter</span><span class="p">:</span>
-            <span class="n">retcode</span> <span class="o">=</span> <span class="mi">1</span>
-            <span class="k">break</span>
-        <span class="n">xi</span> <span class="o">+=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">shares</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">shares_sim</span><span class="p">))</span>
-    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-        <span class="n">print_stars</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;berry_core: error </span><span class="si">{</span><span class="n">max_err</span><span class="si">}</span><span class="s2"> after </span><span class="si">{</span><span class="nb">iter</span><span class="si">}</span><span class="s2"> iterations&quot;</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">xi</span><span class="p">,</span> <span class="n">retcode</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
 
 </div>
     {% endraw %}
@@ -308,12 +205,12 @@ the idiosyncratic $v_{ij}$ is standard type-I EV and $\varepsilon_i$ is $N(0,\Si
 
 <div class="output_subarea output_stream output_stdout output_text">
 <pre>retcode = 0; xi is:
-[ 1.69856261 -1.96799988 -1.29408955]
+[ 1.65303555 -1.95499726 -1.24101363]
 
 Observed and simulated mean shares:
-[[0.4        0.40248714]
- [0.2        0.19773723]
- [0.3        0.29989099]]
+[[0.4        0.39343426]
+ [0.2        0.19921765]
+ [0.3        0.30699062]]
 </pre>
 </div>
 </div>
@@ -346,7 +243,6 @@ Observed and simulated mean shares:
 <div class="output_subarea output_stream output_stdout output_text">
 <pre>Converted 00_core.ipynb.
 Converted index.ipynb.
-Converted kite_tutorial.ipynb.
 </pre>
 </div>
 </div>

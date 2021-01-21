@@ -4,9 +4,7 @@
 
 ## Install
 
-```python
 `pip install cython_berry_core`
-```
 
 ## How to use
 

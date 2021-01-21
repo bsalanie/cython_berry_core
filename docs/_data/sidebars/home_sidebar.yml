@@ -12,9 +12,6 @@ entries:
     - output: web,pdf
       title: cython_berry_core
       url: core.html
-    - output: web,pdf
-      title: Title
-      url: kite_tutorial.html
     output: web
     title: cython_berry_core
   output: web
